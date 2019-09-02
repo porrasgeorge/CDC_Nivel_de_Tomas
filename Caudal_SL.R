@@ -1,15 +1,7 @@
 
 SL_Toma <- read.csv("San Lorenzo Nivel Toma.txt", stringsAsFactors = F)
 SL_Toma$TIME <- as.numeric(as.POSIXct(SL_Toma$TIME, tz = "GMT"))
-
-
-#################################################
-# Solo los datos de noche de 20:00 hasta 5:55
-
-SL_Toma <- SL_Toma %>% filter((TIME %% 86400) %in% c(seq(0,21300,300), seq(72000, 86100, 300)))
-# SL_Toma$TIME <- as.POSIXct(SL_Toma$TIME,
-#                                           origin = "1970-01-01",
-#                                           tz = "GMT")
+SL_Toma <- fechas_rango %>% left_join(SL_Toma, by = "TIME")
 
 # 3 datos por cada quince minutos
 initial_Rows = length(SL_Toma$TIME)/3

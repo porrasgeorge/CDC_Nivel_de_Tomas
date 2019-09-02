@@ -4,11 +4,19 @@ library(lubridate)
 
 rm(list = ls())
 
-source(file = "Caudal_SL.R")
-source(file = "Caudal_Poc.R")
-source(file = "Caudal_Bijagua_Bij.R")
-source(file = "Caudal_Bijagua_Zap.R")
-source(file = "Caudal_Canalete.R")
+fecha_inicio <- as.numeric(as.POSIXct("2018-01-01", tz = "GMT"))
+fecha_final <- as.numeric(as.POSIXct("2019-08-26", tz = "GMT")) - 300
+
+fechas_rango <- as.data.frame(seq(fecha_inicio, 
+                                  fecha_final, 
+                                  300))
+names(fechas_rango)[1] = "TIME"
+
+ source(file = "Caudal_SL.R")
+# source(file = "Caudal_Poc.R")
+# source(file = "Caudal_Bijagua_Bij.R")
+# source(file = "Caudal_Bijagua_Zap.R")
+# source(file = "Caudal_Canalete.R")
 
 
 #################################################
