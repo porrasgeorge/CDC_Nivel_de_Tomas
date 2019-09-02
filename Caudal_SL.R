@@ -101,7 +101,7 @@ NivelToma_SL$Caudal <- 94.047 * sqrt(NivelToma_SL$NivelSobreCresta ^ 3)
 #################################################
 # Unir en grupos de 15 minutos (900 segs)
 
-NivelToma_SL_15m <- NivelToma_SL %>% 
+Toma_SL_15m <- NivelToma_SL %>% 
   mutate(Hora = (Hora %/% 900)*900) %>% 
   group_by(Hora) %>%
   summarise(Fecha_Hora = min(Hora),
@@ -111,7 +111,7 @@ NivelToma_SL_15m <- NivelToma_SL %>%
          Nivel, 
          CaudalAVG)
 
-NivelToma_SL_15m$Fecha_Hora <- as.POSIXct(NivelToma_SL_15m$Fecha_Hora,
+Toma_SL_15m$Fecha_Hora <- as.POSIXct(Toma_SL_15m$Fecha_Hora,
                                           origin = "1970-01-01",
                                           tz = "GMT")
 

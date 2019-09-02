@@ -115,7 +115,7 @@ NivelToma_PocGata$AG_Caudal <- 18.75 * sqrt(NivelToma_PocGata$AG_NivelSobreCrest
 #################################################
 # Unir en grupos de 15 minutos (900 segs)
 
-NivelToma_PocGata_15m <- NivelToma_PocGata %>% 
+Toma_PocGata_15m <- NivelToma_PocGata %>% 
   mutate(Hora = (Hora %/% 900)*900) %>% 
   group_by(Hora) %>%
   summarise(Fecha_Hora = min(Hora),
@@ -151,7 +151,7 @@ NivelToma_PocGata_15m <- NivelToma_PocGata %>%
 # Volver al formato de fecha (se requiere para agrupar por mes)
 
 
-NivelToma_PocGata_15m$Fecha_Hora <- as.POSIXct(NivelToma_PocGata_15m$Fecha_Hora,
+Toma_PocGata_15m$Fecha_Hora <- as.POSIXct(Toma_PocGata_15m$Fecha_Hora,
                                                origin = "1970-01-01",
                                                tz = "GMT")
 

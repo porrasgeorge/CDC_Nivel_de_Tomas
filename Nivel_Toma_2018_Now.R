@@ -6,9 +6,16 @@ rm(list = ls())
 
 source(file = "Caudal_SL.R")
 source(file = "Caudal_Poc.R")
+source(file = "Caudal_Bijagua_Bij.R")
+source(file = "Caudal_Bijagua_Zap.R")
+
+
 
 #################################################
 # Guardado de archivos
 
-DS_list <- list("San Lorenzo" = NivelToma_SL_15m, "Pocosol_Gata" = NivelToma_PocGata_15m)
+DS_list <- list("San Lorenzo" = Toma_SL_15m, 
+                "Pocosol_Gata" = Toma_PocGata_15m,
+                "Bijagua" = Toma_Bij_15m,
+                "Zapote" = Toma_Zap_15m)
 write.xlsx(DS_list, file = "C:/Data Science/ArhivosGenerados/Nivel y Caudal Conelectricas.xlsx")
