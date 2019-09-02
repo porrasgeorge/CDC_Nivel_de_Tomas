@@ -3,7 +3,7 @@ library(tidyverse)
 library(openxlsx)
 library(lubridate)
 
-
+rm(list = ls())
 
 ###############################################################################################################################
   # San Lorenzo
@@ -124,6 +124,7 @@ for (i in 1:(nrow(NivelToma_Poc_TelemFailed)- 1)) {
 
 #################################################
 # si se desea eliminar los telemetry failed del punto anterior
+
 TelemFailedRankingGroup <- NivelToma_Poc_TelemFailed %>%
   group_by(Rank) %>%
   summarise(Hora = min(Hora), minutos = 5*n()) %>%
@@ -227,6 +228,6 @@ rm(TelemFailedRankingGroup, i, n, NivelToma_Poc_TelemFailed)
 # Guardado de archivos
 
 
-DS_list <- list("San Lorenzo" = NivelToma_SL, "Pocosol_Gata" = NivelToma_PocGata)
+DS_list <- list("San Lorenzo" = NivelToma_SL, "Pocosol_Gata" = NivelToma_PocGata_15m)
 write.xlsx(DS_list, file = "C:/Data Science/ArhivosGenerados/Nivel y Caudal Conelectricas.xlsx")
 
