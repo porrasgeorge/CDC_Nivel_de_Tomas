@@ -1,8 +1,9 @@
-t1 = Sys.time()
-Poc_Toma <- read.csv2("Pocosol Nivel Tomas.txt", stringsAsFactors = F)
-Poc_Toma$TIME <- as.numeric(as.POSIXct(Poc_Toma$TIME))
+library(tidyverse)
+library(openxlsx)
+library(lubridate)
 
-t2 = Sys.time()
+Poc_Toma <- read.csv2("Pocosol Nivel Tomas.txt", stringsAsFactors = F)
+Poc_Toma$TIME <- as.numeric(as.POSIXct(Poc_Toma$TIME, tz = "GMT"))
 
 #################################################
 # Union de columnas
@@ -32,7 +33,6 @@ NivelTomaPoc <- Poc_Toma %>%
 NivelToma_PocGata <- NivelTomaPoc %>% right_join(NivelTomaAG, by = "Hora")
 rm(NivelTomaPoc, AG_Toma01, AG_Toma02, NivelTomaAG)
 
-t3 = Sys.time()
 #################################################
 # NAs suplantacion
 
@@ -50,7 +50,37 @@ for (i in Poc_NAs){
 
 rm(Poc_NAs, i)
 
-t4 = Sys.time()
+
+#################################################
+# Fallas de telemetria y valores manuales
+NivelToma_Poc_TelemFailed <- NivelToma_PocGata %>% filter(Poc_Flag != 1)
+NivelToma_Poc_TelemFailed <- cbind(NivelToma_Poc_TelemFailed, rep(0, nrow(NivelToma_Poc_TelemFailed)))
+names(NivelToma_Poc_TelemFailed)[6] = "Rank"
+
+n = 1
+for (i in 1:(nrow(NivelToma_Poc_TelemFailed)- 1)) {
+  NivelToma_Poc_TelemFailed$Rank[i] = n
+  if ((NivelToma_Poc_TelemFailed$Hora[i] + 300) != NivelToma_Poc_TelemFailed$Hora[i+1]){
+    n = n+1
+  }
+}
+
+
+#################################################
+# si se desea eliminar los telemetry failed del punto anterior
+TelemFailedRankingGroup <- NivelToma_Poc_TelemFailed %>%
+  group_by(Rank) %>%
+  summarise(Hora = min(Hora), minutos = 5*n()) %>%
+  filter(minutos > 30)
+
+TelemFailedRankingGroup$Hora <- as.POSIXct(TelemFailedRankingGroup$Hora, 
+                                           origin = "1970-01-01")
+
+# Poc_ABorrar <- NivelToma_Poc_TelemFailed %>% filter(Rank %in% TelemFailedRankingGroup$Rank)%>% select(Hora)
+# NivelToma_PocGata <- NivelToma_PocGata %>% filter(!Hora %in% (Poc_ABorrar$Hora))
+# NivelToma_PocGata %>% filter(Poc_Flag != 1)
+
+
 #################################################
 # Calculo del nivel sobre cresta y Caudal
 
@@ -64,14 +94,13 @@ NivelToma_PocGata$AG_NivelSobreCresta <- ifelse(NivelToma_PocGata$AG_Nivel > 531
                                                 0)
 NivelToma_PocGata$AG_Caudal <- 18.75 * sqrt(NivelToma_PocGata$AG_NivelSobreCresta ^ 3)
 
-t5 = Sys.time()
 #################################################
 # Unir en grupos de 15 minutos (900 segs)
 
-NivelToma_PocGata <- NivelToma_PocGata %>% 
-  mutate(Hora_15 = (Hora %/% 900)*900) %>% 
-  group_by(Hora_15) %>%
-  summarise(Fecha_Hora = min(Hora_15),
+NivelToma_PocGata_15m <- NivelToma_PocGata %>% 
+  mutate(Hora = (Hora %/% 900)*900) %>% 
+  group_by(Hora) %>%
+  summarise(Fecha_Hora = min(Hora),
             Poc_Nivel = mean(Poc_Nivel),
             Poc_CaudalAVG = mean(Poc_Caudal),
             AG_Nivel = mean(AG_Nivel),
@@ -82,21 +111,56 @@ NivelToma_PocGata <- NivelToma_PocGata %>%
          AG_Nivel, 
          AG_CaudalAVG)
 
-t6 = Sys.time()
+#################################################
+# Unir en grupos de 1 dia
+
+NivelToma_PocGata_1dia <- NivelToma_PocGata %>% 
+  mutate(Hora = (Hora %/% 86400)*86400) %>% 
+  group_by(Hora) %>%
+  summarise(Fecha_Hora = min(Hora),
+            Poc_Nivel = mean(Poc_Nivel),
+            Poc_CaudalAVG = mean(Poc_Caudal),
+            AG_Nivel = mean(AG_Nivel),
+            AG_CaudalAVG = mean(AG_Caudal)) %>%
+  select(Fecha_Hora, 
+         Poc_Nivel, 
+         Poc_CaudalAVG, 
+         AG_Nivel, 
+         AG_CaudalAVG)
+
+
+#################################################
+# Unir en grupos de 1 mes
+
+NivelToma_PocGata_1mes <- NivelToma_PocGata_1dia %>% 
+  group_by(anho = year(Fecha_Hora), mes = month(Fecha_Hora)) %>%
+  summarise(Fecha_Hora = min(Fecha_Hora),
+            Poc_Nivel = mean(Poc_Nivel),
+            Poc_CaudalAVG = mean(Poc_CaudalAVG),
+            AG_Nivel = mean(AG_Nivel),
+            AG_CaudalAVG = mean(AG_CaudalAVG)) %>%
+  ungroup() %>%
+  select(Fecha_Hora, 
+         Poc_Nivel, 
+         Poc_CaudalAVG, 
+         AG_Nivel, 
+         AG_CaudalAVG)
+
+
 #################################################
 # Volver al formato de fecha
 
-NivelToma_PocGata$Fecha_Hora <- as.POSIXct(NivelToma_PocGata$Fecha_Hora, 
-                                           origin = "1970-01-01")
 
-t7 = Sys.time()
+NivelToma_PocGata_15m$Fecha_Hora <- as.POSIXct(NivelToma_PocGata_15m$Fecha_Hora,
+                                               origin = "1970-01-01",
+                                               tz = "GMT")
 
-t2 - t1
-t3 - t2
-t4 - t3
-t5 - t4
-t6 - t5
-t7 - t6
 
-print("Total :")
-t7 - t1
+NivelToma_PocGata_1dia$Fecha_Hora <- as.POSIXct(NivelToma_PocGata_1dia$Fecha_Hora,
+                                                origin = "1970-01-01",
+                                                tz = "GMT")
+
+# NivelToma_PocGata$Hora <- as.POSIXct(NivelToma_PocGata$Hora, 
+#                                            origin = "1970-01-01", 
+#                                      tz = "GMT")
+# 
