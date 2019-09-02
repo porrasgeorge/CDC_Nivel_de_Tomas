@@ -11,6 +11,8 @@ Poc_Toma <- Poc_Toma %>% filter((TIME %% 86400) %in% c(seq(0,21300,300), seq(720
 #                                           origin = "1970-01-01",
 #                                           tz = "GMT")
 
+# 3 datos por cada quince minutos
+initial_Rows = length(Poc_Toma$TIME)/3
 
 #################################################
 # Union de columnas
@@ -152,8 +154,8 @@ Toma_PocGata_15m <- NivelToma_PocGata %>%
 
 
 Toma_PocGata_15m$Fecha_Hora <- as.POSIXct(Toma_PocGata_15m$Fecha_Hora,
-                                               origin = "1970-01-01",
-                                               tz = "GMT")
+                                          origin = "1970-01-01",
+                                          tz = "GMT")
 
 # 
 # NivelToma_PocGata_1dia$Fecha_Hora <- as.POSIXct(NivelToma_PocGata_1dia$Fecha_Hora,
@@ -182,7 +184,9 @@ Toma_PocGata_15m$Fecha_Hora <- as.POSIXct(Toma_PocGata_15m$Fecha_Hora,
 #          AG_Nivel, 
 #          AG_CaudalAVG)
 
-Poc_porc_eliminados <- 100 * (length(Poc_Toma$TIME) - length(NivelToma_PocGata$Hora)) / length(Poc_Toma$TIME)
+
+end_Rows = length(Toma_PocGata_15m$Fecha_Hora)
+Poc_porc_eliminados <- round(100 * (initial_Rows - end_Rows) / initial_Rows, 2)
 
 rm(Poc_TelemFailedRankingGroup, 
    i, 
@@ -191,5 +195,7 @@ rm(Poc_TelemFailedRankingGroup,
    Poc_ABorrar,
    NivelToma_PocGata,
    Poc_Toma,
-   Poc_NAs)
+   Poc_NAs, 
+   initial_Rows,
+   end_Rows)
 

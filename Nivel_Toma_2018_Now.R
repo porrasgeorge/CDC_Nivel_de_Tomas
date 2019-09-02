@@ -8,7 +8,7 @@ source(file = "Caudal_SL.R")
 source(file = "Caudal_Poc.R")
 source(file = "Caudal_Bijagua_Bij.R")
 source(file = "Caudal_Bijagua_Zap.R")
-
+source(file = "Caudal_Canalete.R")
 
 
 #################################################
@@ -17,5 +17,6 @@ source(file = "Caudal_Bijagua_Zap.R")
 DS_list <- list("San Lorenzo" = Toma_SL_15m, 
                 "Pocosol_Gata" = Toma_PocGata_15m,
                 "Bijagua" = Toma_Bij_15m,
-                "Zapote" = Toma_Zap_15m)
+                "Zapote" = Toma_Zap_15m,
+                "Canalete" = Toma_Can_15m)
 write.xlsx(DS_list, file = "C:/Data Science/ArhivosGenerados/Nivel y Caudal Conelectricas.xlsx")

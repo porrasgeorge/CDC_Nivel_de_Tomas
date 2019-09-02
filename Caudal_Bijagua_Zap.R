@@ -21,6 +21,8 @@ Zap_Toma <- Zap_Toma %>% filter((Hora %% 86400) %in% c(seq(0,21300,300), seq(720
 #                                           origin = "1970-01-01",
 #                                           tz = "GMT")
 
+# 3 datos por cada quince minutos
+initial_Rows = length(Zap_Toma$Hora)/3
 #################################################
 # NAs suplantacion
 
@@ -109,10 +111,15 @@ Toma_Zap_15m$Fecha_Hora <- as.POSIXct(Toma_Zap_15m$Fecha_Hora,
                                       origin = "1970-01-01",
                                       tz = "GMT")
 
+end_Rows = length(Toma_Zap_15m$Fecha_Hora)
+Zapote_porc_eliminados <- round(100 * (initial_Rows - end_Rows) / initial_Rows, 2)
+
 rm(Zap_Toma_TelemFailed, 
    Zap_TelemFailedRankingGroup, 
    Bij_ABorrar, 
    Zap_Toma, 
    i,
    n,
-   SL_NAs)
+   SL_NAs, 
+   initial_Rows,
+   end_Rows)

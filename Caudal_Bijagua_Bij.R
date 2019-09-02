@@ -20,7 +20,8 @@ Bij_Toma <- Bij_Toma %>% filter((Hora %% 86400) %in% c(seq(0,21300,300), seq(720
 # Bij_Toma$Hora <- as.POSIXct(Bij_Toma$Hora,
 #                                           origin = "1970-01-01",
 #                                           tz = "GMT")
-
+# 3 datos por cada quince minutos
+initial_Rows = length(Bij_Toma$Hora)/3
 #################################################
 # NAs suplantacion
 
@@ -108,6 +109,10 @@ Toma_Bij_15m <- Bij_Toma %>%
 Toma_Bij_15m$Fecha_Hora <- as.POSIXct(Toma_Bij_15m$Fecha_Hora,
                                           origin = "1970-01-01",
                                           tz = "GMT")
+end_Rows = length(Toma_Bij_15m$Fecha_Hora)
+
+Bijagua_porc_eliminados <- round(100 * (initial_Rows - end_Rows) / initial_Rows, 2)
+
 
 rm(Bij_Toma_TelemFailed, 
    Bij_TelemFailedRankingGroup, 
@@ -115,4 +120,6 @@ rm(Bij_Toma_TelemFailed,
    Bij_Toma, 
    i,
    n,
-   SL_NAs)
+   SL_NAs, 
+   initial_Rows,
+   end_Rows)

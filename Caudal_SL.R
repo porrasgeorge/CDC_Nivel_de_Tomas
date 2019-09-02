@@ -2,6 +2,7 @@
 SL_Toma <- read.csv("San Lorenzo Nivel Toma.txt", stringsAsFactors = F)
 SL_Toma$TIME <- as.numeric(as.POSIXct(SL_Toma$TIME, tz = "GMT"))
 
+
 #################################################
 # Solo los datos de noche de 20:00 hasta 5:55
 
@@ -10,6 +11,8 @@ SL_Toma <- SL_Toma %>% filter((TIME %% 86400) %in% c(seq(0,21300,300), seq(72000
 #                                           origin = "1970-01-01",
 #                                           tz = "GMT")
 
+# 3 datos por cada quince minutos
+initial_Rows = length(SL_Toma$TIME)/3
 #################################################
 # Union de columnas
 
@@ -112,11 +115,12 @@ Toma_SL_15m <- NivelToma_SL %>%
          CaudalAVG)
 
 Toma_SL_15m$Fecha_Hora <- as.POSIXct(Toma_SL_15m$Fecha_Hora,
-                                          origin = "1970-01-01",
-                                          tz = "GMT")
+                                     origin = "1970-01-01",
+                                     tz = "GMT")
 
+end_Rows = length(Toma_SL_15m$Fecha_Hora)
 
-SL_porc_eliminados <- 100 * (length(SL_Toma$TIME) - length(NivelToma_SL$Hora)) / length(SL_Toma$TIME)
+SL_porc_eliminados <- round(100 * (initial_Rows - end_Rows) / initial_Rows, 2)
 
 
 rm(NivelToma_SL_TelemFailed, 
@@ -126,4 +130,6 @@ rm(NivelToma_SL_TelemFailed,
    NivelToma_SL,
    i,
    n,
-   SL_NAs)
+   SL_NAs, 
+   initial_Rows,
+   end_Rows)
