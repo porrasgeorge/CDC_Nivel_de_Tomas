@@ -18,6 +18,8 @@ Toma$Nivel <- ifelse(Toma$Nivel < 453.5, 454, Toma$Nivel)
 
 # plot(Toma$Hora, Toma$Nivel)
 boxplot(Toma$Nivel)
+hist(Toma$Nivel)
+
 
 #################################################
 # NAs suplantacion
@@ -128,11 +130,8 @@ Toma_Poc_1m <- Toma_Poc_1d %>%
          Caudal)
 
 
-plot(Toma_Poc_1d$Fecha_Hora, Toma_Poc_1d$Nivel, type = "o",)
-
-plot(Toma_Poc_1d$Fecha_Hora, Toma_Poc_1d$Caudal, type = "o",)
-
-
+# plot(Toma_Poc_1d$Fecha_Hora, Toma_Poc_1d$Nivel, type = "o",)
+# plot(Toma_Poc_1d$Fecha_Hora, Toma_Poc_1d$Caudal, type = "o",)
 
 rm(Toma_TelemFailed, 
    TelemFailedRankingGroup, 
