@@ -25,14 +25,37 @@ Toma02 <- Toma %>%
          Flag = Flag02) %>%
   select(Hora, Nivel, Flag)
 
+
+Pot01 <- Toma %>% 
+  filter(!is.na(AG_Pot01)) %>%
+  mutate(Hora = Hora,
+         Pot = AG_Pot01) %>%
+  select(Hora, Pot)
+
+Pot02 <- Toma %>% 
+  filter(!is.na(AG_Pot02)) %>%
+  mutate(Hora = Hora,
+         Pot = AG_Pot02) %>%
+  select(Hora, Pot)
+
+Pot03 <- Toma %>% 
+  filter(!is.na(AG_Pot03)) %>%
+  mutate(Hora = Hora,
+         Pot = AG_Pot03) %>%
+  select(Hora, Pot)
+
 Toma <- rbind(Toma01, Toma02)
-Toma <- fechas_rango %>% left_join(Toma, by = "Hora")
+Pot <- rbind(Pot01, Pot02, Pot03)
+
+Toma <- fechas_rango %>% left_join(Toma, by = "Hora") %>% 
+  left_join(Pot, by = "Hora")
 
 rm(Toma01, Toma02)
+rm(Pot01, Pot02, Pot03)
 
 # plot(Toma$Hora, Toma$Nivel)
-boxplot(Toma$Nivel)
-hist(Toma$Nivel)
+# boxplot(Toma$Nivel)
+# hist(Toma$Nivel)
 
 #################################################
 # NAs suplantacion
@@ -46,6 +69,17 @@ for (i in NAs) {
   else{
     Toma$Nivel[i] = Toma$Nivel[i - 1]
     Toma$Flag[i] = Toma$Flag[i - 1]
+  }
+}
+
+# potencia
+NAs <- which(is.na(Toma$Pot))
+for (i in NAs) {
+  if (i == 1) {
+    Toma$Pot[i] = 0
+  }
+  else{
+    Toma$Pot[i] = Toma$Pot[i - 1]
   }
 }
 
@@ -106,10 +140,12 @@ Toma_AG_15m <- Toma %>%
   group_by(Hora) %>%
   summarise(Fecha_Hora = min(Hora),
             Nivel = mean(Nivel),
-            Caudal = mean(Caudal)) %>%
+            Caudal = mean(Caudal),
+            Pot = mean(Pot)) %>%
   select(Fecha_Hora, 
          Nivel, 
-         Caudal)
+         Caudal,
+         Pot)
 
 
 Toma_AG_1d <- Toma %>% 
@@ -117,10 +153,12 @@ Toma_AG_1d <- Toma %>%
   group_by(Hora) %>%
   summarise(Fecha_Hora = min(Hora),
             Nivel = mean(Nivel),
-            Caudal = mean(Caudal)) %>%
+            Caudal = mean(Caudal),
+            Pot = mean(Pot)) %>%
   select(Fecha_Hora, 
          Nivel, 
-         Caudal)
+         Caudal,
+         Pot)
 
 
 Toma_AG_15m$Fecha_Hora <- as.POSIXct(Toma_AG_15m$Fecha_Hora,

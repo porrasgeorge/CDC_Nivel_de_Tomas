@@ -142,11 +142,8 @@ Toma_SL_1m <- Toma_SL_1d %>%
          Caudal)
 
 
-plot(Toma_SL_1d$Fecha_Hora, Toma_SL_1d$Nivel, type = "o",)
-
-plot(Toma_SL_1d$Fecha_Hora, Toma_SL_1d$Caudal, type = "o",)
-
-
+# plot(Toma_SL_1d$Fecha_Hora, Toma_SL_1d$Nivel, type = "o",)
+# plot(Toma_SL_1d$Fecha_Hora, Toma_SL_1d$Caudal, type = "o",)
 
 rm(Toma_TelemFailed, 
    TelemFailedRankingGroup, 

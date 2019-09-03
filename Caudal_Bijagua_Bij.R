@@ -1,125 +1,155 @@
 
-Bij_Toma <- read.csv2("Bijagua Nivel Tomas.txt", stringsAsFactors = F)
-Bij_Toma$TIME <- as.numeric(as.POSIXct(Bij_Toma$TIME, tz = "GMT"))
+Toma <- read.csv2("Bijagua Nivel Tomas.txt", stringsAsFactors = F)
+Toma$TIME <- as.numeric(as.POSIXct(Toma$TIME, tz = "GMT"))
+Toma <- Toma %>% filter(TIME <= fecha_final & TIME >= fecha_inicio)
 
-Bij_Toma$BIJAGUA_SUB.NIVEL_DE_TOMA_BIJAGUA.VAL <- NULL
-Bij_Toma$BIJAGUA_SUB.NIVEL_DE_TOMA_BIJAGUA.VAL.Q <- NULL
-Bij_Toma$BIJAGUA_SUB.NIVEL_DE_TOMA_ZAPOTE.VAL <- NULL
-Bij_Toma$BIJAGUA_SUB.NIVEL_DE_TOMA_ZAPOTE.VAL.Q <- NULL
-Bij_Toma$BIJAGUA_SUB.NIVEL_RIO_ZAPOTE.VAL <- NULL
-Bij_Toma$BIJAGUA_SUB.NIVEL_RIO_ZAPOTE.VAL.Q <- NULL
+Toma$BIJAGUA_SUB.NIVEL_DE_TOMA_BIJAGUA.VAL <- NULL
+Toma$BIJAGUA_SUB.NIVEL_DE_TOMA_BIJAGUA.VAL.Q <- NULL
+Toma$BIJAGUA_SUB.NIVEL_DE_TOMA_ZAPOTE.VAL <- NULL
+Toma$BIJAGUA_SUB.NIVEL_DE_TOMA_ZAPOTE.VAL.Q <- NULL
+Toma$BIJAGUA_SUB.NIVEL_RIO_ZAPOTE.VAL <- NULL
+Toma$BIJAGUA_SUB.NIVEL_RIO_ZAPOTE.VAL.Q <- NULL
 
-names(Bij_Toma)[1] <- "Hora"
-names(Bij_Toma)[2] <- "Nivel"
-names(Bij_Toma)[3] <- "Flag"
+names(Toma)[1] <- "Hora"
+names(Toma)[2] <- "Nivel"
+names(Toma)[3] <- "Flag"
 
-#################################################+
-# Solo los datos de noche de 20:00 hasta 5:55
+# Rellenar espacios faltantes
+Toma <- fechas_rango %>% left_join(Toma, by = "Hora")
+Toma$Nivel <- ifelse(Toma$Nivel > 500, NA, Toma$Nivel)
 
-Bij_Toma <- Bij_Toma %>% filter((Hora %% 86400) %in% c(seq(0,21300,300), seq(72000, 86100, 300)))
-# Bij_Toma$Hora <- as.POSIXct(Bij_Toma$Hora,
-#                                           origin = "1970-01-01",
-#                                           tz = "GMT")
-# 3 datos por cada quince minutos
-initial_Rows = length(Bij_Toma$Hora)/3
+# plot(Toma$Hora, Toma$NivelSobreCresta)
+# boxplot(Toma$Nivel)
+# hist(Toma$Nivel)
+
+
 #################################################
 # NAs suplantacion
 
-SL_NAs <- which(is.na(Bij_Toma$Nivel))
-for (i in SL_NAs) {
+NAs <- which(is.na(Toma$Nivel))
+for (i in NAs) {
   if (i == 1) {
-    Bij_Toma$Nivel[i] = 0
-    Bij_Toma$Flag[i] = 0
+    Toma$Nivel[i] = 0
+    Toma$Flag[i] = 0
   }
   else{
-    Bij_Toma$Nivel[i] = Bij_Toma$Nivel[i - 1]
-    Bij_Toma$Flag[i] = Bij_Toma$Flag[i - 1]
+    Toma$Nivel[i] = Toma$Nivel[i - 1]
+    Toma$Flag[i] = Toma$Flag[i - 1]
   }
 }
 
 #################################################
 # Fallas de telemetria y valores manuales
-Bij_Toma_TelemFailed <- Bij_Toma %>% filter(Flag != 1)
-Bij_Toma_TelemFailed <- cbind(Bij_Toma_TelemFailed, 
-                                  rep(0, nrow(Bij_Toma_TelemFailed)))
-names(Bij_Toma_TelemFailed)[4] = "Rank"
+Toma_TelemFailed <- Toma %>% filter(Flag != 1)
+Toma_TelemFailed <- cbind(Toma_TelemFailed,
+                          rep(0, nrow(Toma_TelemFailed)))
+names(Toma_TelemFailed)[4] = "Rank"
 
 n = 1
-for (i in 1:(nrow(Bij_Toma_TelemFailed) - 1)) {
-  Bij_Toma_TelemFailed$Rank[i] = n
-  if ((Bij_Toma_TelemFailed$Hora[i] + 300) != Bij_Toma_TelemFailed$Hora[i + 1]) {
+for (i in 1:(nrow(Toma_TelemFailed) - 1)) {
+  Toma_TelemFailed$Rank[i] = n
+  if ((Toma_TelemFailed$Hora[i] + 300) != Toma_TelemFailed$Hora[i + 1]) {
     n = n + 1
   }
 }
 
-#################################################
-# si se desea eliminar los telemetry failed del punto anterior
 
-Bij_TelemFailedRankingGroup <- Bij_Toma_TelemFailed %>%
+#################################################
+# si se desea AGRUPAR los telemetry failed del punto anterior con base en la duracion
+
+TelemFailedRankingGroup <- Toma_TelemFailed %>%
   group_by(Rank) %>%
-  summarise(Hora = min(Hora), 
+  summarise(Hora = min(Hora),
             minutos = 5 * n()) %>%
   filter(minutos > 30)
 
-Bij_TelemFailedRankingGroup$Hora <- as.POSIXct(Bij_TelemFailedRankingGroup$Hora, 
-                                              origin = "1970-01-01",
-                                              tz = "GMT")
+# TelemFailedRankingGroup$Hora <- as.POSIXct(TelemFailedRankingGroup$Hora, 
+#                                               origin = "1970-01-01",
+#                                               tz = "GMT")
 
-Bij_ABorrar <- Bij_Toma_TelemFailed %>%
-  filter(Rank %in% Bij_TelemFailedRankingGroup$Rank) %>%
-  select(Hora)
+#################################################
+# si se desea eliminar los telemetry failed del punto anterior
 
-Bij_Toma <- Bij_Toma %>% 
-  filter(!Hora %in% (Bij_ABorrar$Hora))
+# ABorrar <- Toma_TelemFailed %>%
+#   filter(Rank %in% TelemFailedRankingGroup$Rank) %>%
+#   select(Hora)
+# 
+# Toma <- Toma %>%
+#   filter(!Hora %in% (ABorrar$Hora))
+# 
 
 #################################################
 # Calculo del nivel sobre cresta y Caudal
 # se tiene una modificacion en esta lecturas 
 # paso de msnm a nivel sobre cresta
 
-Bij_Toma$NivelSobreCresta <- ifelse(Bij_Toma$Nivel > 400, 
-                                        Bij_Toma$Nivel - 409.8, 
-                                        Bij_Toma$Nivel)
+Toma$NivelSobreCresta <- ifelse(Toma$Nivel > 400, 
+                                        Toma$Nivel - 409.8, 
+                                        Toma$Nivel)
 
-Bij_Toma$NivelSobreCresta <- ifelse(Bij_Toma$NivelSobreCresta > 0, 
-                                    Bij_Toma$NivelSobreCresta, 
+Toma$NivelSobreCresta <- ifelse(Toma$NivelSobreCresta > 0, 
+                                    Toma$NivelSobreCresta, 
                                     0)
-
 # el sensor estubo malo y marcaba maxima lectura
-# se eliminan lecturas no logicas
-Bij_Toma <- Bij_Toma %>% filter(NivelSobreCresta < 5)
+Toma$NivelSobreCresta <- ifelse(Toma$NivelSobreCresta > 5, 
+                                0, 
+                                Toma$NivelSobreCresta)
 
 # Calculo de Caudal
-Bij_Toma$Caudal <- 69.06852 * sqrt(Bij_Toma$NivelSobreCresta ^ 3)
+Toma$Caudal <- 69.06852 * sqrt(Toma$NivelSobreCresta ^ 3)
 
 
 #################################################
 # Unir en grupos de 15 minutos (900 segs)
 
-Toma_Bij_15m <- Bij_Toma %>% 
+Toma_Bij_15m <- Toma %>% 
   mutate(Hora = (Hora %/% 900)*900) %>% 
   group_by(Hora) %>%
   summarise(Fecha_Hora = min(Hora),
             Nivel = mean(Nivel),
-            CaudalAVG = mean(Caudal)) %>%
+            Caudal = mean(Caudal)) %>%
   select(Fecha_Hora, 
          Nivel, 
-         CaudalAVG)
+         Caudal)
+
+
+Toma_Bij_1d <- Toma %>% 
+  mutate(Hora = (Hora %/% 86400)*86400) %>% 
+  group_by(Hora) %>%
+  summarise(Fecha_Hora = min(Hora),
+            Nivel = mean(Nivel),
+            Caudal = mean(Caudal)) %>%
+  select(Fecha_Hora, 
+         Nivel, 
+         Caudal)
+
 
 Toma_Bij_15m$Fecha_Hora <- as.POSIXct(Toma_Bij_15m$Fecha_Hora,
-                                          origin = "1970-01-01",
-                                          tz = "GMT")
-end_Rows = length(Toma_Bij_15m$Fecha_Hora)
+                                      origin = "1970-01-01",
+                                      tz = "GMT")
 
-Bijagua_porc_eliminados <- round(100 * (initial_Rows - end_Rows) / initial_Rows, 2)
+Toma_Bij_1d$Fecha_Hora <- as.POSIXct(Toma_Bij_1d$Fecha_Hora,
+                                     origin = "1970-01-01",
+                                     tz = "GMT")
+
+Toma_Bij_1m <- Toma_Bij_1d %>%
+  group_by(anho = year(Fecha_Hora), 
+           mes = month(Fecha_Hora)) %>%
+  summarise(Fecha_Hora = min(Fecha_Hora),
+            Nivel = mean(Nivel),
+            Caudal = mean(Caudal)) %>%
+  ungroup() %>%
+  select(Fecha_Hora,
+         Nivel,
+         Caudal)
 
 
-rm(Bij_Toma_TelemFailed, 
-   Bij_TelemFailedRankingGroup, 
-   Bij_ABorrar, 
-   Bij_Toma, 
+# plot(Toma_Bij_1d$Fecha_Hora, Toma_Bij_1d$Nivel, type = "o",)
+# plot(Toma_Bij_1d$Fecha_Hora, Toma_Bij_1d$Caudal, type = "o",)
+
+rm(Toma_TelemFailed, 
+   TelemFailedRankingGroup, 
+   Toma,
    i,
    n,
-   SL_NAs, 
-   initial_Rows,
-   end_Rows)
+   NAs)

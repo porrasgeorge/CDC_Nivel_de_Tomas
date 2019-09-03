@@ -12,13 +12,13 @@ names(Toma)[1] <- "Hora"
 names(Toma)[2] <- "Nivel"
 names(Toma)[3] <- "Flag"
 
+# Rellenar espacios faltantes
 Toma <- fechas_rango %>% left_join(Toma, by = "Hora")
-
 Toma$Nivel <- ifelse(Toma$Nivel < 453.5, 454, Toma$Nivel)
 
 # plot(Toma$Hora, Toma$Nivel)
-boxplot(Toma$Nivel)
-hist(Toma$Nivel)
+# boxplot(Toma$Nivel)
+# hist(Toma$Nivel)
 
 
 #################################################
