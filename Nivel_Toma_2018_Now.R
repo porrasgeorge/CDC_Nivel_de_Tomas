@@ -10,7 +10,7 @@ fecha_final <- as.numeric(as.POSIXct("2019-08-26", tz = "GMT")) - 300
 fechas_rango <- as.data.frame(seq(fecha_inicio, 
                                   fecha_final, 
                                   300))
-names(fechas_rango)[1] = "TIME"
+names(fechas_rango)[1] = "Hora"
 
  source(file = "Caudal_SL.R")
 # source(file = "Caudal_Poc.R")

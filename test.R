@@ -21,3 +21,17 @@ asdfger <- horas %>% left_join(Toma, by = "TIME")
 asdfger$Hora <- as.POSIXct(asdfger$TIME,
                         origin = "1970-01-01",
                         tz = "GMT")
+
+Toma %>% filter(is.na(Nivel))
+
+
+
+Toma$TIME <- as.POSIXct(Toma$Hora,
+                        origin = "1970-01-01",
+                        tz = "GMT")
+
+
+
+
+hist(Toma_SL_15m$Nivel)
+boxplot(Toma_SL_15m$Nivel)
