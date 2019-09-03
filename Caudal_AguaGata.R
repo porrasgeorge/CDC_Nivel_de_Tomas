@@ -51,7 +51,7 @@ Toma <- fechas_rango %>% left_join(Toma, by = "Hora") %>%
   left_join(Pot, by = "Hora")
 
 rm(Toma01, Toma02)
-rm(Pot01, Pot02, Pot03)
+rm(Pot01, Pot02, Pot03, Pot)
 
 # plot(Toma$Hora, Toma$Nivel)
 # boxplot(Toma$Nivel)

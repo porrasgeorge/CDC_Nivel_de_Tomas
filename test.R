@@ -36,12 +36,30 @@ Toma$TIME <- as.POSIXct(Toma$Hora,
                         tz = "GMT")
 
 
-plot(Toma_AG_15m$Fecha_Hora, 
-     Toma_AG_15m$Nivel, 
+plot(Toma$Hora, 
+     Toma$Nivel, 
      pch = 19,
      cex = 0.5,
      col =  "#0073C2FF")
-abline(a = 531.5, 
+abline(a = 2.43, 
+       b = 0, 
+       col =  "yellow")
+
+plot(Toma_HZ_1h$Fecha_Hora, 
+     Toma_HZ_1h$Nivel, 
+     pch = 19,
+     cex = 0.5,
+     col =  "#0073C2FF")
+abline(a = 2.43, 
+       b = 0, 
+       col =  "yellow")
+
+plot(Toma_Esp_1d$Fecha_Hora, 
+     Toma_Esp_1d$Nivel, 
+     pch = 19,
+     cex = 0.5,
+     col =  "#0073C2FF")
+abline(a = 2.43, 
        b = 0, 
        col =  "yellow")
 
@@ -51,4 +69,6 @@ boxplot(Toma_SL_15m$Nivel)
 
 a <- Toma_Zap_15m %>% filter(Nivel > 0, Nivel < 0.2)
 plot(a$Fecha_Hora, a$Nivel)
+
+abline(v=c(15,20), col=c("blue", "red"), lty=c(1,2), lwd=c(1, 3))
 
