@@ -94,8 +94,5 @@ Toma_Zap_1m <- Toma_Zap_1d %>%
          Caudal)
 
 
-# plot(Toma_Zap_1d$Fecha_Hora, Toma_Zap_1d$Nivel, type = "o",)
-# plot(Toma_Zap_1d$Fecha_Hora, Toma_Zap_1d$Caudal, type = "o",)
-
 rm(Toma)
 

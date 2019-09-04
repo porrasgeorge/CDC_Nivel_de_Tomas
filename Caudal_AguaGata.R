@@ -105,22 +105,17 @@ TelemFailedRankingGroup <- Toma_TelemFailed %>%
   group_by(Rank) %>%
   summarise(Hora = min(Hora),
             minutos = 5 * n()) %>%
-  filter(minutos > 30)
-
-# TelemFailedRankingGroup$Hora <- as.POSIXct(TelemFailedRankingGroup$Hora, 
-#                                               origin = "1970-01-01",
-#                                               tz = "GMT")
+  filter(minutos > 60)
 
 #################################################
 # si se desea eliminar los telemetry failed del punto anterior
+# se decide bajarlos a -1
 
-# ABorrar <- Toma_TelemFailed %>%
-#   filter(Rank %in% TelemFailedRankingGroup$Rank) %>%
-#   select(Hora)
-# 
-# Toma <- Toma %>%
-#   filter(!Hora %in% (ABorrar$Hora))
-# 
+ABorrar <- Toma_TelemFailed %>%
+  filter(Rank %in% TelemFailedRankingGroup$Rank) %>%
+  select(Hora)
+
+Toma$Nivel <- ifelse(Toma$Hora %in% ABorrar$Hora	, -1, Toma$Nivel)
 
 
 #################################################
@@ -181,12 +176,10 @@ Toma_AG_1m <- Toma_AG_1d %>%
          Caudal)
 
 
-# plot(Toma_AG_1d$Fecha_Hora, Toma_AG_1d$Nivel, type = "o",)
-# plot(Toma_AG_1d$Fecha_Hora, Toma_AG_1d$Caudal, type = "o",)
-
 rm(Toma_TelemFailed, 
    TelemFailedRankingGroup, 
    Toma,
+   ABorrar,
    i,
    n,
    NAs)

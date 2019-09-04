@@ -61,22 +61,17 @@ TelemFailedRankingGroup <- Toma_TelemFailed %>%
   group_by(Rank) %>%
   summarise(Hora = min(Hora),
             minutos = 5 * n()) %>%
-  filter(minutos > 30)
-
-# TelemFailedRankingGroup$Hora <- as.POSIXct(TelemFailedRankingGroup$Hora, 
-#                                               origin = "1970-01-01",
-#                                               tz = "GMT")
+  filter(minutos > 60)
 
 #################################################
 # si se desea eliminar los telemetry failed del punto anterior
+# se decide bajarlos a -1
 
-# ABorrar <- Toma_TelemFailed %>%
-#   filter(Rank %in% TelemFailedRankingGroup$Rank) %>%
-#   select(Hora)
-# 
-# Toma <- Toma %>%
-#   filter(!Hora %in% (ABorrar$Hora))
-# 
+ABorrar <- Toma_TelemFailed %>%
+  filter(Rank %in% TelemFailedRankingGroup$Rank) %>%
+  select(Hora)
+
+Toma$Nivel <- ifelse(Toma$Hora %in% ABorrar$Hora	, -1, Toma$Nivel)
 
 #################################################
 # Calculo del nivel sobre cresta y Caudal
@@ -122,7 +117,9 @@ Toma_Bij_1d <- Toma %>%
   select(Fecha_Hora, 
          Nivel, 
          Caudal)
-
+# Toma$Hora <- as.POSIXct(Toma$Hora,
+#                                       origin = "1970-01-01",
+#                                       tz = "GMT")
 
 Toma_Bij_15m$Fecha_Hora <- as.POSIXct(Toma_Bij_15m$Fecha_Hora,
                                       origin = "1970-01-01",

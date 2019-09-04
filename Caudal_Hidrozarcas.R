@@ -33,6 +33,41 @@ for (i in NAs) {
   }
 }
 
+#################################################
+# Fallas de telemetria y valores manuales
+Toma_TelemFailed <- Toma %>% filter(Flag != 1)
+Toma_TelemFailed <- cbind(Toma_TelemFailed,
+                          rep(0, nrow(Toma_TelemFailed)))
+names(Toma_TelemFailed)[4] = "Rank"
+
+n = 1
+for (i in 1:(nrow(Toma_TelemFailed) - 1)) {
+  Toma_TelemFailed$Rank[i] = n
+  if ((Toma_TelemFailed$Hora[i] + 300) != Toma_TelemFailed$Hora[i + 1]) {
+    n = n + 1
+  }
+}
+
+
+#################################################
+# si se desea AGRUPAR los telemetry failed del punto anterior con base en la duracion
+
+TelemFailedRankingGroup <- Toma_TelemFailed %>%
+  group_by(Rank) %>%
+  summarise(Hora = min(Hora),
+            minutos = 5 * n()) %>%
+  filter(minutos > 60)
+
+#################################################
+# si se desea eliminar los telemetry failed del punto anterior
+# se decide bajarlos a -1
+
+ABorrar <- Toma_TelemFailed %>%
+  filter(Rank %in% TelemFailedRankingGroup$Rank) %>%
+  select(Hora)
+
+Toma$Nivel <- ifelse(Toma$Hora %in% ABorrar$Hora	, -1, Toma$Nivel)
+
 
 #################################################
 # Calculo del nivel sobre cresta y Caudal
@@ -108,4 +143,5 @@ Toma_HZ_1m <- Toma_HZ_1d %>%
 
 rm(Toma,
    i,
-   NAs)
+   NAs, 
+   ABorrar)
